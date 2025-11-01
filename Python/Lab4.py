@@ -700,6 +700,20 @@ def main():
     ax.set_title('Verified Trajectory in s frame')
     ax.legend()
     plt.show()
+    
+    # (3e) verify the robot does not enter kinematic singularity
+    # by plotting the determinant of the body jacobian
+    body_dets = np.zeros(len(t))
+    # for i in range(len(t)):
+        # TODO: complete this plot
+        # body_dets[i] = np.linalg.det(...)
+    plt.plot(t, body_dets, '-')
+    plt.xlabel('t (seconds)')
+    plt.ylabel('det of J_B')
+    plt.title('Manipulability')
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
 
     # save to csv file (you can modify the led column to control the led)
     # led = 1 means the led is on, led = 0 means the led is off

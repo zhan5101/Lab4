@@ -189,7 +189,19 @@ plot3(xs(end),ys(end),zs(end),'rx','MarkerSize',10,'LineWidth',2)
 legend('Trajectory', 'Start', 'End')
 grid on
 hold off
-%[text] (3e) Save to CSV File
+%%
+%[text] (3e) Verify that the end effector does not enter a kinematic singularity, by plotting the determinant of your body jacobian
+body_dets = zeros(N,1);
+for i=1:N
+    body_dets(i) = det(...);
+end
+plot(t, body_dets)
+title('Manipulability')
+grid on
+xlabel('time (s)')
+ylabel('det of J_B')
+%%
+%[text] (3f) Save to CSV File
 % you can play with turning the LEDs on and off
 led = ones(N,1);
 
