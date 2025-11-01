@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-import pandas as pd
 import pkg_resources
 import numpy as np
 import os
@@ -17,8 +16,11 @@ class JointPublisherCSV(Node):
         
         filename = 'ldihel.csv' # change this line of code. The provided CSV file (ldihel.csv) is incomplete
         csv_file = pkg_resources.resource_filename('py_joint_pub', f'../resource/{filename}')
-        self.df = pd.read_csv(csv_file)
-        self.df_length = len(self.df)
+        self.get_logger().info(f"Found CSV file {csv_file}")
+        self.csv_data = np.genfromtxt(csv_file, delimiter=',', skip_header=1)
+        self.data_length = len(self.csv_data)
+        self.get_logger().info(f"Read CSV file {csv_file} \
+            with {np.size(self.csv_data,0)} rows and {np.size(self.csv_data,1)} columns")
 
     def timer_callback(self):
         
@@ -27,7 +29,7 @@ class JointPublisherCSV(Node):
         msg.name = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint',
                     'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
         
-        msg.position = self.df.iloc[self.i, 1:-1].tolist()
+        msg.position = self.csv_data[self.i, 1:7]
         
         msg.velocity = []
         msg.effort = []
@@ -35,7 +37,7 @@ class JointPublisherCSV(Node):
         self.publisher_.publish(msg)
         
         self.i += 1
-        self.i %= self.df_length # loop back to the beginning of the csv file
+        self.i %= self.data_length # loop back to the beginning of the csv file
 
 
 def main(args=None):
