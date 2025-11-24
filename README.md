@@ -28,7 +28,7 @@ For all students, you will need to first edit `ws4/src/msee22_description/urdf/m
 
 Then, build all packages. If you get an error, look for the Lab 4 update thread on Piazza - there might be a solution already posted there to your particular problem.
 ```bash
-cd ~/ece569-fall2025/ws4/
+cd ~/ece569-fall2025/Lab4/ws4/
 colcon build --symlink-install
 source install/setup.bash
 ```
