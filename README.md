@@ -13,7 +13,7 @@ For steps 1-3, you can use the MATLAB or Python starter code provided. First, ma
 
 If you are not using eceprog, you will need to download the UR description package to the `ws4/src` folder.
 ```bash
-cd ~/ece569-fall2025/ws4/src
+cd ~/ece569-fall2025/Lab4/ws4/src
 git clone https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
 cd Universal_Robots_ROS2_Description
 ```
