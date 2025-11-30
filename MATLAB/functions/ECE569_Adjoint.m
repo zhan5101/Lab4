@@ -5,7 +5,10 @@ function AdT = ECE569_Adjoint(T)
 % Example Input:
 % 
 % clear; clc;
-% T = [[1, 0, 0, 0]; [0, 0, -1, 0]; [0, 1, 0, 3]; [0, 0, 0, 1]];
+% T = [[1, 0, 0, 0]; 
+%      [0, 0, -1, 0]; 
+%      [0, 1, 0, 3]; 
+%      [0, 0, 0, 1]];
 % AdT = Adjoint(T)
 % 
 % Output:
@@ -16,6 +19,15 @@ function AdT = ECE569_Adjoint(T)
 %     0     0     3     1     0     0
 %     3     0     0     0     0    -1
 %     0     0     0     0     1     0
+
 [R, p] = ECE569_TransToRp(T);
-% AdT = ... TODO
+
+% skew-symmetric matrix of p
+px = [     0   -p(3)   p(2);
+        p(3)      0   -p(1);
+       -p(2)   p(1)      0 ];
+
+AdT = [ R,           zeros(3);
+        px * R,      R        ];
+
 end

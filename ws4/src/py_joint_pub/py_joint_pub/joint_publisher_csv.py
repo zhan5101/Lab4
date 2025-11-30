@@ -14,7 +14,7 @@ class JointPublisherCSV(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
         
-        filename = 'ldihel.csv' # change this line of code. The provided CSV file (ldihel.csv) is incomplete
+        filename = 'he711.csv' # change this line of code. The provided CSV file (ldihel.csv) is incomplete
         csv_file = pkg_resources.resource_filename('py_joint_pub', f'../resource/{filename}')
         self.get_logger().info(f"Found CSV file {csv_file}")
         self.csv_data = np.genfromtxt(csv_file, delimiter=',', skip_header=1)
@@ -29,8 +29,15 @@ class JointPublisherCSV(Node):
         msg.name = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint',
                     'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
         
-        msg.position = self.csv_data[self.i, 1:7]
+        #msg.position = self.csv_data[self.i, 1:7]
         
+        row = self.csv_data[self.i, :]
+        positions = [float(x) for x in row[1:7]]
+        msg.position = positions
+        msg.name = ['shoulder_pan_joint','shoulder_lift_joint','elbow_joint',
+            'wrist_1_joint','wrist_2_joint','wrist_3_joint']
+
+
         msg.velocity = []
         msg.effort = []
         

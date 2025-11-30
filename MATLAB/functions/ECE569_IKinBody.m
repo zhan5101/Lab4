@@ -1,61 +1,47 @@
-function [thetalist, success] = ECE569_IKinBody(Blist, M, T, thetalist0, eomg, ev)
-% *** CHAPTER 6: INVERSE KINEMATICS ***
-% Takes Blist: The joint screw axes in the end-effector frame when the
-%              manipulator is at the home position, in the format of a 
-%              matrix with the screw axes as the columns,
-%       M: The home configuration of the end-effector,
-%       T: The desired end-effector configuration Tsd,
-%       thetalist0: An initial guess of joint angles that are close to 
-%                   satisfying Tsd,
-%       eomg: A small positive tolerance on the end-effector orientation
-%             error. The returned joint angles must give an end-effector 
-%             orientation error less than eomg,
-%       ev: A small positive tolerance on the end-effector linear position 
-%           error. The returned joint angles must give an end-effector
-%           position error less than ev.
-% Returns thetalist: Joint angles that achieve T within the specified 
-%                    tolerances,
-%         success: A logical value where TRUE means that the function found
-%                  a solution and FALSE means that it ran through the set 
-%                  number of maximum iterations without finding a solution
-%                  within the tolerances eomg and ev.
-% Uses an iterative Newton-Raphson root-finding method.
-% The maximum number of iterations before the algorithm is terminated has 
-% been hardcoded in as a variable called maxiterations. It is set to 20 at 
-% the start of the function, but can be changed if needed.  
-% Example Inputs:
-% 
-% clear; clc;
-% Blist = [[0; 0; -1; 2; 0; 0], [0; 0; 0; 0; 1; 0], [0; 0; 1; 0; 0; 0.1]];
-% M = [[-1, 0, 0, 0]; [0, 1, 0, 6]; [0, 0, -1, 2]; [0, 0, 0, 1]];
-% T = [[0, 1, 0, -5]; [1, 0, 0, 4]; [0, 0, -1, 1.6858]; [0, 0, 0, 1]];
-% thetalist0 = [1.5; 2.5; 3];
-% eomg = 0.01;
-% ev = 0.001;
-% [thetalist, success] = IKinBody(Blist, M, T, thetalist0, eomg, ev)
-% 
-% Output:
-% thetalist =
-%    1.5707
-%    2.9997
-%    3.1415
-% success =
-%     1
+function [thetalist, success] = ECE569_IKinBody(Blist, M, Tsd, thetalist0, eomg, ev)
+% Inverse Kinematics in the BODY frame (MR, Sec. 6.2; Eq. 6.54+)
+% Inputs:
+%   Blist      : 6xn body screw axes at home, columns are Bi
+%   M          : 4x4 home configuration of the end-effector
+%   Tsd        : 4x4 desired configuration of end-effector (in {s})
+%   thetalist0 : nx1 initial guess
+%   eomg       : orientation error tolerance  (||ω_b|| <= eomg)
+%   ev         : position error tolerance     (||v_b|| <= ev)
+% Outputs:
+%   thetalist  : solution joint angles
+%   success    : true(1) if both tolerances are met before max iters
 
-thetalist = thetalist0;
-i = 0;
-maxiterations = 20;
-% TODO: calculate Vb
-% Hint: you will need to use four of the ECE569 functions from earlier
-% Vb = ...
-err = norm(Vb(1: 3)) > eomg || norm(Vb(4: 6)) > ev;
-while err && i < maxiterations
-    % TODO: update thetalist
-    % Hint: the psuedo-inverse is given in MATLAB by pinv()
-    % thetalist = thetalist + ...
-    i = i + 1;
-    % Vb = ...
-    err = norm(Vb(1: 3)) > eomg || norm(Vb(4: 6)) > ev;
+thetalist = thetalist0(:);          % ensure column vector
+maxiter   = 100;                    % reasonable default
+i         = 0;
+
+% current forward pose
+Tsb = ECE569_FKinBody(M, Blist, thetalist);
+
+% body-frame error transform Tbd = inv(Tsb) * Tsd
+Tbd = ECE569_TransInv(Tsb) * Tsd;
+Vb  = ECE569_se3ToVec(ECE569_MatrixLog6(Tbd));   % [ω_b; v_b]
+
+werr = norm(Vb(1:3));
+verr = norm(Vb(4:6));
+
+while (werr > eomg || verr > ev) && i < maxiter
+    i  = i + 1;
+
+    % body Jacobian at current thetas
+    Jb = ECE569_JacobianBody(Blist, thetalist);
+
+    % damped least-squares / pseudoinverse step (plain pinv is fine here)
+    thetalist = thetalist + pinv(Jb) * Vb;
+
+    % update pose and error
+    Tsb = ECE569_FKinBody(M, Blist, thetalist);
+    Tbd = ECE569_TransInv(Tsb) * Tsd;
+    Vb  = ECE569_se3ToVec(ECE569_MatrixLog6(Tbd));
+
+    werr = norm(Vb(1:3));
+    verr = norm(Vb(4:6));
 end
-success = ~ err;
+
+success = (werr <= eomg) && (verr <= ev);
 end

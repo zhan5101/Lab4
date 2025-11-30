@@ -16,4 +16,16 @@ function se3mat = ECE569_VecTose3(V)
 %     0     0     0     0 
 
 % se3mat = ... TODO
+
+omega = V(1:3);     % first 3 entries are angular part
+v     = V(4:6);     % last 3 entries are linear part
+
+% hat(omega)
+w_hat = [   0        -omega(3)   omega(2);
+         omega(3)       0       -omega(1);
+        -omega(2)    omega(1)       0     ];
+
+% assemble se(3)
+se3mat = [ w_hat, v;
+           0 0 0 0 ];
 end
